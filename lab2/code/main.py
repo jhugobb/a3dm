@@ -6,7 +6,6 @@ import imp
 
 from time import time
 
-
 dir = os.path.dirname(bpy.data.filepath)
 if not dir in sys.path:
     sys.path.append(dir )

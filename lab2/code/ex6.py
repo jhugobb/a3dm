@@ -26,7 +26,8 @@ def union_find(collection):
 class obj:
     def __init__(self, value):
         self.value = value
-def initSet(el): #Initialise
+
+def init(el): #Initialise
      el.manyfold = True #True if the element belongs to a manyfold shell
 
 def calShells(ob):
@@ -42,7 +43,7 @@ def calShells(ob):
     polygons = [()] * len(ob.data.polygons)
     for i in range(len(ob.data.polygons)):
         polygons[i] = (obj(ob.data.polygons[i]))
-        initSet(polygons[i])
+        init(polygons[i])
 
     #Check how many times each edge is referenced
     edge_dict = edgeDict()

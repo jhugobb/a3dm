@@ -32,7 +32,6 @@ def main():
 
     ob = bpy.data.scenes['Scene'].objects.active
 
-    #Ex1
     t = time()
     verts, faces = ex2.cat_clark_subdivision(ob)
     createObj(verts, faces)

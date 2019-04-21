@@ -1,6 +1,7 @@
 import collections as ct
 
-par = 2
+# For ex4
+par = 1.2
 
 class edgeDict(dict):
     def __missing__(self, key):
@@ -42,7 +43,8 @@ def cat_clark_subdivision(ob):
 
   for v in verts:
     new_verts.append(v.co)
-
+  
+  # Create face vertices 
   for face in faces:
     x = 0
     y = 0
@@ -56,6 +58,7 @@ def cat_clark_subdivision(ob):
     new_vertex = (x/n, y/n, z/n)
     new_verts.append(new_vertex)
 
+  # Create edge vertices
   for e in edges:
     v1 = verts[e.vertices[0]].co
     v2 = verts[e.vertices[1]].co
@@ -68,6 +71,7 @@ def cat_clark_subdivision(ob):
     new_vertex = (x/n, y/n, z/n)
     new_verts.append(new_vertex)
 
+  # Define faces
   for count, f in enumerate(faces):
     center_idx = n_old_verts + count
     for v in f.vertices:

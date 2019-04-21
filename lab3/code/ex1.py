@@ -56,21 +56,13 @@ def simple_subdivision(ob):
     new_verts.append(new_vertex)
 
   for count, f in enumerate(faces):
-    print("This is face " + str(count))
     center_idx = n_old_verts + count
-    for e in f.edge_keys:
-      print("edgeface: " + str(e))
     for v in f.vertices:
       edges_of_face = []
-      print("length of vert_dict: " + str(len(vert_dict[v])))
-      print("vertex: " + str(v))
       for e in f.edge_keys:
-        print("edge: " + str(e))
         if v in e:
           ed = face_edge_map[e]
           edges_of_face.append(ed.index)
-      print("length: " + str(len(edges_of_face)))
-
       edge_mid1_idx = n_old_verts + n_faces +  edges_of_face[0]
       edge_mid2_idx = n_old_verts + n_faces +  edges_of_face[1]
       new_face = (v, edge_mid2_idx, center_idx, edge_mid1_idx)

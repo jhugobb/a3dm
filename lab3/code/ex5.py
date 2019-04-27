@@ -36,8 +36,8 @@ def createObj(verts, faces):
   print("hey")
 
 def createNotRenderedObj(verts, faces):
-  me = bpy.data.meshes.new("DivMeshtemp") 
-  ob = bpy.data.objects.new("DivObjtemp", me)
+  me = bpy.data.meshes.new("Meshtemp") 
+  ob = bpy.data.objects.new("Objtemp", me)
   me.from_pydata(verts, [], faces)
   me.update(calc_edges=True)
   return ob
@@ -52,10 +52,9 @@ def subdivide(ob, n):
     ob_cat_clark = createNotRenderedObj(verts_cat_clark, faces_cat_clark)
   return verts_simple, verts_cat_clark, faces_simple
 
-def main(n = 2):
+def main(n = 4):
 
     ob = bpy.data.scenes['Scene'].objects.active
-    location = ob.location
     # If we are in edit mode
     bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -63,11 +62,18 @@ def main(n = 2):
     verts_simple, verts_cat_clark, faces_simple = subdivide(ob, n)
 
     def interpolation(t):
+      
       res_verts = ex3.step(verts_simple, verts_cat_clark, t)
-      bpy.ops.object.delete()
+      for o in bpy.data.objects:
+        if "DivObj" in o.name or "Base" in o.name:
+          m = o.data
+          o.select = True
+          bpy.ops.object.delete()
+          bpy.data.meshes.remove(m)
+
       me = bpy.data.meshes.new("DivMesh") 
       ob = bpy.data.objects.new("DivObj", me) 
-      ob.location = location
+      ob.location = (0,0,0)
       bpy.context.scene.objects.link(ob)
         
       me.from_pydata(res_verts, [], faces_simple)
@@ -78,7 +84,6 @@ def main(n = 2):
 
       # Recalculate normals
       bpy.ops.object.mode_set(mode='EDIT')
-      bpy.ops.mesh.select_all(action='SELECT')
       bpy.ops.mesh.normals_make_consistent(inside=False)
       bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -90,7 +95,7 @@ def main(n = 2):
       step = float(frame-start)/num
       interpolation(step)
 
-    bpy.data.scenes['Scene'].frame_end=100
+    bpy.data.scenes['Scene'].frame_end=760
     bpy.data.scenes['Scene'].frame_current=0
 
     bpy.app.handlers.frame_change_pre.clear()

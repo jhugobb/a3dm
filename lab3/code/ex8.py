@@ -3,10 +3,6 @@ import collections as ct
 # For ex4
 par = 1.2
 
-class edgeDict(dict):
-    def __missing__(self, key):
-       return list()
-
 def cat_clark_creases(ob, creases):
   new_faces = []
   new_verts = []
@@ -16,6 +12,7 @@ def cat_clark_creases(ob, creases):
   edges = ob.data.edges
   faces = ob.data.polygons
   edge_keys = ob.data.edge_keys
+  # Builds a map that can take face edge keys and return edge indexes
   face_edge_map = {ek: edges[i] for i, ek in enumerate(edge_keys)}
   
   # Builds E:{F}
@@ -87,11 +84,13 @@ def cat_clark_creases(ob, creases):
     for v in f.vertices:
       edges_of_face = []
 
+      # Checks to see if the vertex belongs to a crease
       cr = False
       for e in vert_dict[v]:
         if e in creases:
           cr = True
           break
+
       for e in f.edge_keys:
         if v in e:
           ed = face_edge_map[e]
@@ -134,18 +133,21 @@ def cat_clark_creases(ob, creases):
       new_faces.append(new_face)
   return new_verts, new_faces, creased
       
+# Receives an object and a set of vertices that belong to parent crease edges
+# Returns the list of edge indexes that are childs of crease parents
 def get_crease_index(ob, creased_verts):
   verts = ob.data.vertices
   edges = ob.data.edges
   res = []
 
+  # Handles numeric errors of calculating midpoints
   cr_verts = []
   for v2 in verts:
     for v in creased_verts:
       if (abs(v[0]-v2.co[0]) < 0.05 and abs(v[1]-v2.co[1]) < 0.05 and abs(v[2]-v2.co[2]) < 0.05):
         cr_verts.append(v2.co)
 
-
+  # Finds edges that contain both vertices in the list of crease vertices
   for e in edges:
     is_crease = True
     for v in e.vertices:
@@ -154,10 +156,3 @@ def get_crease_index(ob, creased_verts):
     if is_crease: res.append(e.index)
   
   return res
-
-def e_f_dict(ob):
-  edge_dict = edgeDict()
-  for count, p in enumerate(ob.data.polygons):
-    for key in p.edge_keys:
-      edge_dict[key].append(count)
-  return edge_dict

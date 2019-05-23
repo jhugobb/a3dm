@@ -3,10 +3,6 @@ import collections as ct
 # For ex4
 par = 1.2
 
-class edgeDict(dict):
-    def __missing__(self, key):
-       return list()
-
 def cat_clark_subdivision(ob):
   new_faces = []
   new_verts = []
@@ -15,6 +11,7 @@ def cat_clark_subdivision(ob):
   edges = ob.data.edges
   faces = ob.data.polygons
   edge_keys = ob.data.edge_keys
+  # Builds a map that can take face edge keys and return edge indexes
   face_edge_map = {ek: edges[i] for i, ek in enumerate(edge_keys)}
   
   # Builds E:{F}
@@ -118,11 +115,3 @@ def cat_clark_subdivision(ob):
       new_face = (v, edge_mid2_idx, center_idx, edge_mid1_idx)
       new_faces.append(new_face)
   return new_verts, new_faces
-      
-
-def e_f_dict(ob):
-  edge_dict = edgeDict()
-  for count, p in enumerate(ob.data.polygons):
-    for key in p.edge_keys:
-      edge_dict[key].append(count)
-  return edge_dict

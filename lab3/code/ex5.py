@@ -22,9 +22,6 @@ def createObj(verts, faces):
     
   me.from_pydata(verts, [], faces)
   me.update(calc_edges=True)
-  # bpy.data.objects["Subdiv1"].select = True
-  # bpy.context.scene.objects.active = bpy.data.objects["DivObj"]
-  # ob.select = True
 
   # Recalculate normals
   bpy.ops.object.mode_set(mode='EDIT')
@@ -33,8 +30,7 @@ def createObj(verts, faces):
   bpy.ops.object.editmode_toggle()
   bpy.ops.object.mode_set(mode='OBJECT')
 
-  print("hey")
-
+# Used to have a mesh to process as a middle step
 def createNotRenderedObj(verts, faces):
   me = bpy.data.meshes.new("Meshtemp") 
   ob = bpy.data.objects.new("Objtemp", me)
@@ -42,6 +38,7 @@ def createNotRenderedObj(verts, faces):
   me.update(calc_edges=True)
   return ob
 
+# Loops n times and subdivides each time
 def subdivide(ob, n):
   ob_simple = ob
   ob_cat_clark = ob
@@ -52,6 +49,7 @@ def subdivide(ob, n):
     ob_cat_clark = createNotRenderedObj(verts_cat_clark, faces_cat_clark)
   return verts_simple, verts_cat_clark, faces_simple
 
+# Receives the number of times to subdivide the active object
 def main(n = 4):
 
     ob = bpy.data.scenes['Scene'].objects.active
@@ -61,8 +59,8 @@ def main(n = 4):
     t = time()
     verts_simple, verts_cat_clark, faces_simple = subdivide(ob, n)
 
+    # Called each frame to compute difference between previous and next frame
     def interpolation(t):
-      
       res_verts = ex3.step(verts_simple, verts_cat_clark, t)
       for o in bpy.data.objects:
         if "DivObj" in o.name or "Base" in o.name:
@@ -71,11 +69,11 @@ def main(n = 4):
           bpy.ops.object.delete()
           bpy.data.meshes.remove(m)
 
+      # Creates the object
       me = bpy.data.meshes.new("DivMesh") 
       ob = bpy.data.objects.new("DivObj", me) 
       ob.location = (0,0,0)
       bpy.context.scene.objects.link(ob)
-        
       me.from_pydata(res_verts, [], faces_simple)
       me.update(calc_edges=True)
       bpy.data.objects["DivObj"].select = True
@@ -87,6 +85,7 @@ def main(n = 4):
       bpy.ops.mesh.normals_make_consistent(inside=False)
       bpy.ops.object.mode_set(mode='OBJECT')
 
+    # Update function
     def Callback(scene):
       start = scene.frame_start
       end = scene.frame_end

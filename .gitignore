@@ -107,3 +107,6 @@ venv.bak/
 *.blend
 *.pdf
 *.cfg
+*.mkv
+*.zip
+*/OpenMesh/*

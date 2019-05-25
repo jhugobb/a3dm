@@ -64,6 +64,10 @@ void glwin::setup_menu() {  // you may add here your new menu entries
   connect(action, SIGNAL(triggered()), this, SLOT(loadScalarField()));
   popup_menu->addAction(action);
 
+  action = new QAction("Load Scalar Field With Marching Cubes", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(loadMC()));
+  popup_menu->addAction(action);
+
   action = new QAction("Change Threshold", this);
   connect(action, SIGNAL(triggered()), this, SLOT(changeThreshold()));
   popup_menu->addAction(action);
@@ -113,6 +117,14 @@ void glwin::changeThreshold() {
   }
   update();
 }
+
+void glwin::loadMC() {
+  file = QFileDialog::getOpenFileName(NULL, "Select a field to add:", "", "Meshes (*.obj *.ply *.stl *.off *.om);;All Files (*)");
+  scene.loadMC(file);
+  addToRender(scene.meshes().back());
+  update();
+}
+
 void glwin::keyPressEvent(QKeyEvent *e)
 {
   switch (e->key()) {
@@ -154,15 +166,28 @@ void glwin::paintGL(void) {
   std::vector<DrawMethod>::iterator itmethods;
   assert(VAOS.size()==elementsSize.size());
   assert(VAOS.size()==drawMethods.size());
-  for (it = VAOS.begin(), itsizes = elementsSize.begin(), itmethods = drawMethods.begin();
-       it != VAOS.end(); ++it, ++itsizes, ++itmethods){
-    if (*itmethods==SKIP) continue;
-    glBindVertexArray(*it);
-    if (*itmethods==USE_ELEMENTS)
-      glDrawElements(GL_TRIANGLES, *itsizes , GL_UNSIGNED_INT, 0);
-    else  /* USE_ARRAYS */
-      glDrawArrays(GL_TRIANGLES, 0, *itsizes);
+  // for (it = VAOS.begin(), itsizes = elementsSize.begin(), itmethods = drawMethods.begin();
+  //      it != VAOS.end(); ++it, ++itsizes, ++itmethods){
+  //   if (*itmethods==SKIP) continue;
+  //   glBindVertexArray(*it);
+  //   if (*itmethods==USE_ELEMENTS)
+  //     glDrawElements(GL_TRIANGLES, *itsizes , GL_UNSIGNED_INT, 0);
+  //   else  /* USE_ARRAYS */
+  //     glDrawArrays(GL_TRIANGLES, 0, *itsizes);
+  // }
+  if (VAOS.size() != 0) {
+    it = VAOS.end()-1;
+    itsizes = elementsSize.end()-1;
+    itmethods = drawMethods.end()-1;
+    if (*itmethods!=SKIP) {
+      glBindVertexArray(*it);
+      if (*itmethods==USE_ELEMENTS)
+        glDrawElements(GL_TRIANGLES, *itsizes , GL_UNSIGNED_INT, 0);
+      else  /* USE_ARRAYS */
+        glDrawArrays(GL_TRIANGLES, 0, *itsizes);
+    }
   }
+
   glBindVertexArray(0);  
 }
 

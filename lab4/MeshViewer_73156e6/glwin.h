@@ -50,6 +50,7 @@ class glwin : public QOpenGLWidget, public QOpenGLFunctions_3_3_Core
   void addCubeVC();
   void loadScalarField();
   void changeThreshold();
+  void loadMC();
 
  private:
   Scene scene;

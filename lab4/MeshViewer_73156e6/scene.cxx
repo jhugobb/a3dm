@@ -374,3 +374,154 @@ void Scene::loadScalarField(QString filename) {
   m.update_normals();
   _meshes.push_back(std::pair<MyMesh,ColorInfo>(std::move(m), FACE_COLORS));
 }
+
+void Scene::loadMC(QString filename) {
+  min = std::numeric_limits<float>::max();
+  max = std::numeric_limits<float>::min();
+  scalar_field = std::vector<float>();
+  int voxelization_size; 
+  std::ifstream file(filename.toStdString());
+  std::string line;
+  unsigned int v = 0;
+  while (std::getline(file, line)) {
+    QString l = QString(line.c_str());
+    if (v==0){
+      voxelization_size = l.toInt();
+      v++;
+    } else {
+      float f = l.toFloat();
+      scalar_field.push_back(f);
+      if (f < min) min = f;
+      if (f > max) max = f;
+    }
+  }
+  float value;
+  MyMesh m;
+  std::vector<QVector3D> verts;
+  std::vector<int> b(voxelization_size*voxelization_size*voxelization_size,0);
+  for (int i=0; i<voxelization_size; i++) {
+    for (int j=0; j<voxelization_size; j++) {
+      for (int k=0; k<voxelization_size; k++) {
+        value = scalar_field[i*voxelization_size*voxelization_size + j*voxelization_size + k];
+        // Add vertices
+        if (value < threshold) {
+          b.at(i*voxelization_size*voxelization_size + j*voxelization_size + k) = 1;
+        } else b.at(i*voxelization_size*voxelization_size + j*voxelization_size + k) = 0;
+      }
+    }
+  }
+
+  for (int i=0; i<voxelization_size*voxelization_size*voxelization_size; i++) {
+    int z = fmod(i,voxelization_size);              //z
+    int y = (fmod(i, voxelization_size*voxelization_size) - z) / voxelization_size; //y
+    int x = (i - y*voxelization_size - z) / (voxelization_size*voxelization_size); //x
+    verts.push_back(QVector3D(x,y,z));
+  }
+  int cas;
+  std::vector<std::vector<int>> top;
+  for (int i=0; i<voxelization_size-1; i++) {
+    for (int j=0; j<voxelization_size-1; j++) {
+      for (int k=0; k<voxelization_size-1; k++) {
+        int v1 = i*voxelization_size*voxelization_size + j*voxelization_size + k;
+        int v2 = i*voxelization_size*voxelization_size + (j+1)*voxelization_size + k;
+        int v3 = i*voxelization_size*voxelization_size + j*voxelization_size + k+1;
+        int v4 = i*voxelization_size*voxelization_size + (j+1)*voxelization_size + k+1;
+        int v5 = (i+1)*voxelization_size*voxelization_size + j*voxelization_size + k;
+        int v6 = (i+1)*voxelization_size*voxelization_size + (j+1)*voxelization_size + k;
+        int v7 = (i+1)*voxelization_size*voxelization_size + j*voxelization_size + k+1;
+        int v8 = (i+1)*voxelization_size*voxelization_size + (j+1)*voxelization_size + k+1;
+
+        cas = b[v1]*128 + b[v2]*64 + b[v3]*32 + b[v4]*16 + b[v5]*8 + b[v6]*4 + b[v7]*2 + b[v8];
+        top = casos[cas];
+        std::vector<MyMesh::VertexHandle> face_vhandles;
+        QVector3D n;
+        MyMesh::FaceHandle face;
+        for (unsigned int q = 0; q < top.size(); q++){
+          MyMesh::VertexHandle vhandle[3];
+
+          for (unsigned int c = 0; c < top[q].size(); c++) {
+            switch (top.at(q).at(c)) {
+              case 0:
+                n = linear_interpolation(verts[v1], 0, verts[v5], 4, 0);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 1:
+                n = linear_interpolation(verts[v5], 4, verts[v6], 5, 1);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 2:
+                n = linear_interpolation(verts[v6], 5, verts[v2], 1, 2);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 3:
+                n = linear_interpolation(verts[v2], 1, verts[v1], 0, 3);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 4:
+                n = linear_interpolation(verts[v3], 2, verts[v7], 6, 4);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 5:
+                n = linear_interpolation(verts[v7], 6, verts[v8], 7, 5);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 6:
+                n = linear_interpolation(verts[v8], 7, verts[v4], 3, 6);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 7:
+                n = linear_interpolation(verts[v4], 3, verts[v3], 2, 7);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 8:
+                n = linear_interpolation(verts[v7], 6, verts[v5], 4, 8);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 9:
+                n = linear_interpolation(verts[v8], 7, verts[v6], 5, 9);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 10:
+                n = linear_interpolation(verts[v3], 2, verts[v1], 0, 10);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+              case 11:
+                n = linear_interpolation(verts[v4], 3, verts[v2], 1, 11);
+                vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
+                face_vhandles.push_back(vhandle[c]);
+                break;
+            }
+          }
+          if (top[q].size() != 0) {
+            face = m.add_face(face_vhandles);
+            m.set_color(face, MyMesh::Color(1., 0., 0.));
+            face_vhandles.clear();
+          }
+        }
+      }
+    }
+  }
+  m.update_normals();
+  _meshes.push_back(std::pair<MyMesh,ColorInfo>(std::move(m), NONE));
+}
+
+QVector3D Scene::linear_interpolation(QVector3D a, int va, QVector3D b, int vb, int v) {
+  QVector3D res = QVector3D(0,0,0);
+  float f = (float(vb-v)/float(vb-va));
+  float f2 = (float(v-va)/float(vb-va));
+  res.setX(a.x()*f+b.x()*f2);
+  res.setY(a.y()*f+b.y()*f2);
+  res.setZ(a.z()*f+b.z()*f2);
+  return res;
+}

@@ -55,8 +55,8 @@ class Scene {
   void addCube();
   void addCubeVertexcolors();
   void loadScalarField(QString);
-  void loadMC(QString);
-  QVector3D linear_interpolation(QVector3D, int, QVector3D, int, int);
+  bool loadMC(QString);
+  QVector3D linear_interpolation(QVector3D, float, QVector3D, float, int);
   typedef enum {NONE=0, VERTEX_COLORS, FACE_COLORS} ColorInfo;
   const std::vector<std::pair<MyMesh,ColorInfo> >& meshes() {return _meshes;}
 
@@ -64,6 +64,7 @@ class Scene {
   float getMaxVal();
   void setThreshold(float);
   float getThreshold();
+  void up();
   
  private:
   std::vector<float> scalar_field;

@@ -3,7 +3,7 @@ QT += opengl
 QT += widgets
 CONFIG += debug
 CONFIG += warn_on
-QMAKE_CXXFLAGS += -std=c++14 -D__USE_XOPEN
+QMAKE_CXXFLAGS += -std=c++14 -D__USE_XOPEN -O3
 
 # Inputs:
 INCLUDEPATH += .

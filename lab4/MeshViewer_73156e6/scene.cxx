@@ -35,6 +35,10 @@ float Scene::getMaxVal() {
   return max;
 }
 
+void Scene::up() {
+  threshold++;
+}
+
 void Scene::setThreshold(float t) {
   threshold = t;
 }
@@ -375,7 +379,7 @@ void Scene::loadScalarField(QString filename) {
   _meshes.push_back(std::pair<MyMesh,ColorInfo>(std::move(m), FACE_COLORS));
 }
 
-void Scene::loadMC(QString filename) {
+bool Scene::loadMC(QString filename) {
   min = std::numeric_limits<float>::max();
   max = std::numeric_limits<float>::min();
   scalar_field = std::vector<float>();
@@ -397,26 +401,24 @@ void Scene::loadMC(QString filename) {
   }
   float value;
   MyMesh m;
-  std::vector<QVector3D> verts;
+  std::vector<QVector3D> verts(voxelization_size*voxelization_size*voxelization_size,QVector3D(0,0,0));
+  std::vector<float> values(voxelization_size*voxelization_size*voxelization_size,0);
   std::vector<int> b(voxelization_size*voxelization_size*voxelization_size,0);
   for (int i=0; i<voxelization_size; i++) {
     for (int j=0; j<voxelization_size; j++) {
       for (int k=0; k<voxelization_size; k++) {
         value = scalar_field[i*voxelization_size*voxelization_size + j*voxelization_size + k];
+        values.at(i*voxelization_size*voxelization_size + j*voxelization_size + k) = value;
+        //std::cout << value << std::endl;        
         // Add vertices
         if (value < threshold) {
           b.at(i*voxelization_size*voxelization_size + j*voxelization_size + k) = 1;
         } else b.at(i*voxelization_size*voxelization_size + j*voxelization_size + k) = 0;
+        verts.at(i*voxelization_size*voxelization_size + j*voxelization_size + k) = QVector3D(i,j,k);
       }
     }
   }
-
-  for (int i=0; i<voxelization_size*voxelization_size*voxelization_size; i++) {
-    int z = fmod(i,voxelization_size);              //z
-    int y = (fmod(i, voxelization_size*voxelization_size) - z) / voxelization_size; //y
-    int x = (i - y*voxelization_size - z) / (voxelization_size*voxelization_size); //x
-    verts.push_back(QVector3D(x,y,z));
-  }
+  bool in = false;
   int cas;
   std::vector<std::vector<int>> top;
   for (int i=0; i<voxelization_size-1; i++) {
@@ -431,7 +433,7 @@ void Scene::loadMC(QString filename) {
         int v7 = (i+1)*voxelization_size*voxelization_size + j*voxelization_size + k+1;
         int v8 = (i+1)*voxelization_size*voxelization_size + (j+1)*voxelization_size + k+1;
 
-        cas = b[v1]*128 + b[v2]*64 + b[v3]*32 + b[v4]*16 + b[v5]*8 + b[v6]*4 + b[v7]*2 + b[v8];
+        cas = b[v8]*128 + b[v7]*64 + b[v6]*32 + b[v5]*16 + b[v4]*8 + b[v3]*4 + b[v2]*2 + b[v1];
         top = casos[cas];
         std::vector<MyMesh::VertexHandle> face_vhandles;
         QVector3D n;
@@ -439,70 +441,72 @@ void Scene::loadMC(QString filename) {
         for (unsigned int q = 0; q < top.size(); q++){
           MyMesh::VertexHandle vhandle[3];
 
-          for (unsigned int c = 0; c < top[q].size(); c++) {
+          for (unsigned int c = 0; c < top.at(q).size(); c++) {
+            in = true;
             switch (top.at(q).at(c)) {
               case 0:
-                n = linear_interpolation(verts[v1], 0, verts[v5], 4, 0);
+                n = linear_interpolation(verts[v1], values[v1], verts[v5], values[v5], 0);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 1:
-                n = linear_interpolation(verts[v5], 4, verts[v6], 5, 1);
+                n = linear_interpolation(verts[v5], values[v5], verts[v6], values[v6], 1);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 2:
-                n = linear_interpolation(verts[v6], 5, verts[v2], 1, 2);
+                n = linear_interpolation(verts[v6], values[v6], verts[v2], values[v2], 2);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 3:
-                n = linear_interpolation(verts[v2], 1, verts[v1], 0, 3);
+                n = linear_interpolation(verts[v2], values[v2], verts[v1], values[v1], 3);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 4:
-                n = linear_interpolation(verts[v3], 2, verts[v7], 6, 4);
+                n = linear_interpolation(verts[v3], values[v3], verts[v7], values[v7], 4);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 5:
-                n = linear_interpolation(verts[v7], 6, verts[v8], 7, 5);
+                n = linear_interpolation(verts[v7], values[v7], verts[v8], values[v8], 5);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 6:
-                n = linear_interpolation(verts[v8], 7, verts[v4], 3, 6);
+                n = linear_interpolation(verts[v8], values[v8], verts[v4], values[v4], 6);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 7:
-                n = linear_interpolation(verts[v4], 3, verts[v3], 2, 7);
+                n = linear_interpolation(verts[v4], values[v4], verts[v3], values[v3], 7);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 8:
-                n = linear_interpolation(verts[v7], 6, verts[v5], 4, 8);
+                n = linear_interpolation(verts[v7], values[v7], verts[v5], values[v5], 8);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 9:
-                n = linear_interpolation(verts[v8], 7, verts[v6], 5, 9);
+                n = linear_interpolation(verts[v8], values[v8], verts[v6], values[v6], 9);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 10:
-                n = linear_interpolation(verts[v3], 2, verts[v1], 0, 10);
+                n = linear_interpolation(verts[v3], values[v3], verts[v1], values[v1], 10);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
               case 11:
-                n = linear_interpolation(verts[v4], 3, verts[v2], 1, 11);
+                n = linear_interpolation(verts[v4], values[v4], verts[v2], values[v2], 11);
                 vhandle[c] = m.add_vertex(MyMesh::Point(n.x(),n.y(),n.z()));
                 face_vhandles.push_back(vhandle[c]);
                 break;
             }
           }
+          // std::cout << n.x() << " " << n.y() << " " << n.z() << std::endl;
           if (top[q].size() != 0) {
             face = m.add_face(face_vhandles);
             m.set_color(face, MyMesh::Color(1., 0., 0.));
@@ -514,14 +518,18 @@ void Scene::loadMC(QString filename) {
   }
   m.update_normals();
   _meshes.push_back(std::pair<MyMesh,ColorInfo>(std::move(m), NONE));
+  return in;
 }
 
-QVector3D Scene::linear_interpolation(QVector3D a, int va, QVector3D b, int vb, int v) {
-  QVector3D res = QVector3D(0,0,0);
-  float f = (float(vb-v)/float(vb-va));
-  float f2 = (float(v-va)/float(vb-va));
-  res.setX(a.x()*f+b.x()*f2);
-  res.setY(a.y()*f+b.y()*f2);
-  res.setZ(a.z()*f+b.z()*f2);
+QVector3D Scene::linear_interpolation(QVector3D a, float va, QVector3D b, float vb, int v23) {
+  if (abs(threshold-va) < 0.001) return a;
+  if (abs(threshold-vb) < 0.001) return b;
+  if (abs(va-vb) < 0.001) return a;
+  float f = (threshold - va) / (vb - va);
+
+  QVector3D res;
+  res.setX(a.x()+f*(b.x()-a.x()));
+  res.setY(a.y()+f*(b.y()-a.y()));
+  res.setZ(a.z()+f*(b.z()-a.z()));
   return res;
 }

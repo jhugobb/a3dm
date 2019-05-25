@@ -71,6 +71,10 @@ void glwin::setup_menu() {  // you may add here your new menu entries
   action = new QAction("Change Threshold", this);
   connect(action, SIGNAL(triggered()), this, SLOT(changeThreshold()));
   popup_menu->addAction(action);
+
+  action = new QAction("Animation of Marching Cubes", this);
+  connect(action, SIGNAL(triggered()), this, SLOT(animMarchCubes()));
+  popup_menu->addAction(action);
 }
 
 //
@@ -104,6 +108,8 @@ void glwin::loadScalarField(){
   file = QFileDialog::getOpenFileName(NULL, "Select a field to add:", "", "Meshes (*.obj *.ply *.stl *.off *.om);;All Files (*)");
   scene.loadScalarField(file);
   addToRender(scene.meshes().back());
+  scalar = true;
+  mc = false;
   update();
 }
 
@@ -112,7 +118,11 @@ void glwin::changeThreshold() {
   double threshold = QInputDialog::getDouble(NULL, tr("Please set a new threshold"), tr("Select:"), scene.getThreshold(), scene.getMinVal(), scene.getMaxVal(), 2, nullptr);
   scene.setThreshold(threshold);
   if (file != NULL) {
-    scene.loadScalarField(file);
+    if (scalar) {
+      scene.loadScalarField(file);
+    } else if (mc) {
+      scene.loadMC(file);
+    }
     addToRender(scene.meshes().back());
   }
   update();
@@ -122,6 +132,31 @@ void glwin::loadMC() {
   file = QFileDialog::getOpenFileName(NULL, "Select a field to add:", "", "Meshes (*.obj *.ply *.stl *.off *.om);;All Files (*)");
   scene.loadMC(file);
   addToRender(scene.meshes().back());
+  scalar = false;
+  mc = true;
+  update();
+}
+
+void glwin::animMarchCubes() {
+  file = QFileDialog::getOpenFileName(NULL, "Select a field to add:", "", "Meshes (*.obj *.ply *.stl *.off *.om);;All Files (*)");
+  scene.setThreshold(-10000);
+  scene.loadMC(file);
+  scene.setThreshold(scene.getMinVal());
+  timer=new QTimer(this);
+  connect(timer, SIGNAL(timeout()), this, SLOT(upThreshold()));
+  timer->start(1000);
+}
+
+void glwin::upThreshold(){
+  float min = scene.getMinVal();
+  float max = scene.getMaxVal();
+  scene.setThreshold(scene.getThreshold()+(max-min)/20);
+  std::cout << scene.getThreshold() << std::endl;
+  if (file != NULL) {
+    bool running = scene.loadMC(file);
+    if (!running) timer->stop();
+    else addToRender(scene.meshes().back());
+  } else timer->stop();
   update();
 }
 

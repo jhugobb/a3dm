@@ -16,7 +16,7 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -std=c++14 -D__USE_XOPEN -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -std=c++14 -D__USE_XOPEN -O3 -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I. -I/home/yellow/Qt/5.12.2/gcc_64/include -I/home/yellow/Qt/5.12.2/gcc_64/include/QtOpenGL -I/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets -I/home/yellow/Qt/5.12.2/gcc_64/include/QtGui -I/home/yellow/Qt/5.12.2/gcc_64/include/QtCore -Ibuild -isystem /usr/include/libdrm -I/home/yellow/Qt/5.12.2/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/yellow/Qt/5.12.2/gcc_64/bin/qmake
 DEL_FILE      = rm -f
@@ -712,7 +712,7 @@ compiler_moc_predefs_make_all: build/moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) build/moc_predefs.h
 build/moc_predefs.h: /home/yellow/Qt/5.12.2/gcc_64/mkspecs/features/data/dummy.cpp
-	g++ -pipe -std=c++14 -D__USE_XOPEN -g -Wall -W -dM -E -o build/moc_predefs.h /home/yellow/Qt/5.12.2/gcc_64/mkspecs/features/data/dummy.cpp
+	g++ -pipe -std=c++14 -D__USE_XOPEN -O3 -g -Wall -W -dM -E -o build/moc_predefs.h /home/yellow/Qt/5.12.2/gcc_64/mkspecs/features/data/dummy.cpp
 
 compiler_moc_header_make_all: build/moc_glwin.cpp
 compiler_moc_header_clean:
@@ -846,12 +846,22 @@ build/moc_glwin.cpp: glwin.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/QTimer \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qtimer.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qbasictimer.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QInputDialog \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qinputdialog.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qlineedit.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qframe.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextcursor.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextformat.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qpen.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextoption.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QMenu \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qmenu.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qicon.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qaction.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qactiongroup.h \
 		scene.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/QVector3D \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qvector3d.h \
 		utils.h \
 		build/moc_predefs.h \
 		/home/yellow/Qt/5.12.2/gcc_64/bin/moc
@@ -1005,12 +1015,22 @@ build/glwin.o: glwin.cxx glwin.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/QTimer \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qtimer.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qbasictimer.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QInputDialog \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qinputdialog.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qlineedit.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qframe.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextcursor.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextformat.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qpen.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextoption.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QMenu \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qmenu.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qicon.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qaction.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qactiongroup.h \
 		scene.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/QVector3D \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qvector3d.h \
 		utils.h \
 		checkgl.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QApplication \
@@ -1025,9 +1045,9 @@ build/glwin.o: glwin.cxx glwin.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/glwin.o glwin.cxx
 
 build/scene.o: scene.cxx scene.h \
-		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/QString \
-		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qstring.h \
-		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qchar.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/QVector3D \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qvector3d.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtguiglobal.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qglobal.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qconfig-bootstrapped.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qconfig.h \
@@ -1049,10 +1069,21 @@ build/scene.o: scene.cxx scene.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qmutex.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qnumeric.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qversiontagging.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtgui-config.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qpoint.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qnamespace.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qmetatype.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qbytearray.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qrefcount.h \
-		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qnamespace.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qarraydata.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qvarlengtharray.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qcontainerfwd.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qalgorithms.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qobjectdefs.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/QString \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qstring.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qchar.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qstringliteral.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qstringalgorithms.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qstringview.h \
@@ -1198,12 +1229,22 @@ build/viewer.o: viewer.cxx /home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QAppl
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/QTimer \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qtimer.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtCore/qbasictimer.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QInputDialog \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qinputdialog.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qlineedit.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qframe.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextcursor.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextformat.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qpen.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qtextoption.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/QMenu \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qmenu.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qicon.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qaction.h \
 		/home/yellow/Qt/5.12.2/gcc_64/include/QtWidgets/qactiongroup.h \
 		scene.h \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/QVector3D \
+		/home/yellow/Qt/5.12.2/gcc_64/include/QtGui/qvector3d.h \
 		utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/viewer.o viewer.cxx
 

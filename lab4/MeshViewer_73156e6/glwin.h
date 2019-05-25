@@ -51,6 +51,8 @@ class glwin : public QOpenGLWidget, public QOpenGLFunctions_3_3_Core
   void loadScalarField();
   void changeThreshold();
   void loadMC();
+  void upThreshold();
+  void animMarchCubes();
 
  private:
   Scene scene;
@@ -90,6 +92,9 @@ class glwin : public QOpenGLWidget, public QOpenGLFunctions_3_3_Core
   glm::mat4 projectionMatrix;
   glm::mat3 NormalMatrix;
 
+  bool scalar = false;
+  bool mc = false;
+
   //interaction state:
   typedef enum {NONE=0, ROTATE, ZOOM, PAN} InteractionState;
   InteractionState interactionState;
@@ -97,6 +102,7 @@ class glwin : public QOpenGLWidget, public QOpenGLFunctions_3_3_Core
   glm::vec3 eixPrev;
   QMenu *popup_menu;
 
+  QTimer *timer;
   QString file;
 };
 #endif // __MeshViewer_glwin_h_
